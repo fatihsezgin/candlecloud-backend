@@ -16,6 +16,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// FindIndex ...
+func FindIndex(vs []string, t string) int {
+	for i, v := range vs {
+		if v == t {
+			return i
+		}
+	}
+	return -1
+}
+
 // NewBcrypt ...
 func NewBcrypt(key []byte) string {
 	hasher, _ := bcrypt.GenerateFromPassword(key, bcrypt.DefaultCost)
@@ -104,6 +114,21 @@ func DecryptModel(rawModel interface{}) (interface{}, error) {
 	}
 
 	return rawModel, err
+}
+
+// DecryptPayload ...
+func DecryptPayload(key string, encrypted []byte) ([]byte, error) {
+
+	// 1. Get a openssl object
+	o := openssl.New()
+
+	// 2. Decrypt string
+	dec, err := o.DecryptBytes(key, encrypted, openssl.BytesToKeyMD5)
+	if err != nil {
+		return dec, err
+	}
+
+	return dec, nil
 }
 
 // DecryptJSON ...

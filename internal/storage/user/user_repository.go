@@ -22,6 +22,30 @@ func (p *Repository) All() ([]model.User, error) {
 	return users, err
 }
 
+// FindAll ...
+func (p *Repository) FindAll(argsStr map[string]string, argsInt map[string]int) ([]model.User, error) {
+	users := []model.User{}
+
+	query := p.db
+	query = query.Limit(argsInt["limit"])
+	if argsInt["limit"] > 0 {
+		// offset can't be declared without a valid limit
+		query = query.Offset(argsInt["offset"])
+	}
+
+	query = query.Order(argsStr["order"])
+
+	if argsStr["search"] != "" {
+		query = query.Where("name LIKE ? OR email LIKE ? OR role LIKE ?",
+			"%"+argsStr["search"]+"%",
+			"%"+argsStr["search"]+"%",
+			"%"+argsStr["search"]+"%")
+	}
+
+	err := query.Find(&users).Error
+	return users, err
+}
+
 func (p *Repository) FindByID(id uint) (*model.User, error) {
 	user := new(model.User)
 	err := p.db.Where(`id = ?`, id).First(&user).Error

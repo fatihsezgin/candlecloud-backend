@@ -12,7 +12,12 @@ func MigrateSystemTables(s storage.Store) {
 	if err := s.Users().Migrate(); err != nil {
 		log.Println(err)
 	}
+	if err := s.Products().Migrate(); err != nil {
+		log.Println(err)
+	}
 }
+
+// func MigrateUserTables(s storage.Store, schema string) {}
 
 // MigrateUserTables runs auto migration for user models in user schema,
 // will only add missing fields won't delete/change current data in the store.

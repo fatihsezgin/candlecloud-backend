@@ -18,6 +18,27 @@ const (
 	InvalidRequestPayload = "Invalid request payload"
 )
 
+// FindAllUsers ...
+func FindAllUsers(s storage.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var err error
+		users := []model.User{}
+
+		fields := []string{"id", "created_at", "updated_at", "url", "username"}
+		argsStr, argsInt := SetArgs(r, fields)
+
+		users, err = s.Users().FindAll(argsStr, argsInt)
+
+		if err != nil {
+			RespondWithError(w, http.StatusNotFound, err.Error())
+			return
+		}
+
+		usersDTOs := model.ToUserDTOs(users)
+		RespondWithJSON(w, http.StatusOK, usersDTOs)
+	}
+}
+
 // FindUserByID ...
 func FindUserByID(s storage.Store) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +83,7 @@ func CreateUser(s storage.Store) http.HandlerFunc {
 
 		// Check if user exists in database
 		_, err := s.Users().FindByEmail(userDTO.Email)
-		if err != nil {
+		if err == nil {
 			errs := []string{"This email is already used!"}
 			message := "User couldn't created!"
 			RespondWithErrors(w, http.StatusBadRequest, message, errs)
