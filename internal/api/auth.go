@@ -10,9 +10,22 @@ import (
 	"github.com/go-playground/validator"
 )
 
+const (
+	//InvalidJSON represents a message for invalid json
+	InvalidJSON = "Invalid json provided"
+)
+
 var (
-	Success       = "Success"
-	signupSuccess = "User created successfully"
+	Success        = "Success"
+	signupSuccess  = "User created successfully"
+	userLoginErr   = "User email or master password is wrong."
+	userVerifyErr  = "Please verify your email first."
+	invalidUser    = "Invalid user"
+	validToken     = "Token is valid"
+	invalidToken   = "Token is expired or not valid!"
+	noToken        = "Token could not found! "
+	tokenCreateErr = "Token could not be created"
+	verifySuccess  = "Email verified successfully"
 )
 
 func Signup(s storage.Store) http.HandlerFunc {
@@ -61,5 +74,44 @@ func Signup(s storage.Store) http.HandlerFunc {
 			Message: signupSuccess,
 		}
 		RespondWithJSON(w, http.StatusOK, response)
+	}
+}
+
+func Signin(s storage.Store) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var loginDTO model.AuthLoginDTO
+
+		decoder := json.NewDecoder(r.Body)
+		if err := decoder.Decode(&loginDTO); err != nil {
+			RespondWithError(w, http.StatusInternalServerError, InvalidJSON)
+			return
+		}
+		defer r.Body.Close()
+
+		err := app.PayloadValidator(loginDTO)
+		if err != nil {
+			errs := GetErrors(err.(validator.ValidationErrors))
+			RespondWithErrors(w, http.StatusBadRequest, InvalidRequestPayload, errs)
+			return
+		}
+
+		user, err := s.Users().FindByCredentials(loginDTO.Email, loginDTO.Password)
+		if err != nil {
+			RespondWithError(w, http.StatusUnauthorized, userLoginErr)
+			return
+		}
+
+		token, err := app.CreateToken(user)
+		if err != nil {
+			RespondWithError(w, http.StatusInternalServerError, tokenCreateErr)
+			return
+		}
+
+		authLoginResponse := model.AuthLoginResponse{
+			AccessToken:  token.AccessToken,
+			RefreshToken: token.RefreshToken,
+			UserDTO:      model.ToUserDTO(user),
+		}
+		RespondWithJSON(w, 200, authLoginResponse)
 	}
 }

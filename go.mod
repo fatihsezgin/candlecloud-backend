@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/Luzifer/go-openssl/v4 v4.1.0
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
@@ -15,4 +16,5 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/mod v0.1.0
 )
