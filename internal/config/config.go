@@ -21,6 +21,7 @@ var (
 type Configuration struct {
 	Database DatabaseConfiguration
 	Server   ServerConfiguration
+	Redis    RedisConfiguration
 }
 
 type DatabaseConfiguration struct {
@@ -37,6 +38,9 @@ type ServerConfiguration struct {
 	Port       string `default:"3625"`
 	Timeout    int    `default:"24"`
 	Passphrase string `default:"passphrase-for-encrypting-passwords-do-not-forget"`
+}
+type RedisConfiguration struct {
+	Addr string `default:"localhost:6379"`
 }
 
 func SetupConfigDefaults() (*Configuration, error) {
@@ -98,6 +102,9 @@ func setDefaults() {
 	viper.SetDefault("database.host", "localhost")
 	viper.SetDefault("database.port", "5432")
 	viper.SetDefault("database.logmode", false)
+
+	//Redis defaults
+	viper.SetDefault("redis.addr", "6379")
 }
 
 func generateKey() string {

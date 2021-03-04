@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/fatihsezgin/candlecloud-backend/internal/app"
@@ -25,7 +26,6 @@ var (
 	invalidToken   = "Token is expired or not valid!"
 	noToken        = "Token could not found! "
 	tokenCreateErr = "Token could not be created"
-	verifySuccess  = "Email verified successfully"
 )
 
 func Signup(s storage.Store) http.HandlerFunc {
@@ -104,6 +104,11 @@ func Signin(s storage.Store) http.HandlerFunc {
 		token, err := app.CreateToken(user)
 		if err != nil {
 			RespondWithError(w, http.StatusInternalServerError, tokenCreateErr)
+			return
+		}
+		saveErr := app.CreateAuth(user.ID, token)
+		if saveErr != nil {
+			log.Fatal("error while saving redis", saveErr)
 			return
 		}
 

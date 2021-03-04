@@ -1,10 +1,13 @@
 package app
 
 import (
+	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/fatihsezgin/candlecloud-backend/internal/cache"
 	"github.com/fatihsezgin/candlecloud-backend/model"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
@@ -23,10 +26,10 @@ func CreateToken(user *model.User) (*model.TokenDetails, error) {
 	td := &model.TokenDetails{}
 
 	td.AtExpires = time.Now().Add(time.Minute * 15).Unix()
-	td.AtUUID = uuid.NewV4()
+	td.AtUUID = uuid.NewV4().String()
 
 	td.RtExpires = time.Now().Add(time.Minute * 30).Unix()
-	td.RtUUID = uuid.NewV4()
+	td.RtUUID = uuid.NewV4().String()
 
 	atClaims := jwt.MapClaims{}
 
@@ -37,7 +40,7 @@ func CreateToken(user *model.User) (*model.TokenDetails, error) {
 
 	atClaims["user_uuid"] = user.UUID.String()
 	atClaims["exp"] = td.AtExpires
-	atClaims["uuid"] = td.AtUUID.String()
+	atClaims["uuid"] = td.AtUUID
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	td.AccessToken, err = at.SignedString([]byte(secret))
 	if err != nil {
@@ -47,7 +50,7 @@ func CreateToken(user *model.User) (*model.TokenDetails, error) {
 	rtClaims := jwt.MapClaims{}
 	rtClaims["user_uuid"] = user.UUID.String()
 	rtClaims["exp"] = td.RtExpires
-	rtClaims["uuid"] = td.RtUUID.String()
+	rtClaims["uuid"] = td.RtUUID
 
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 	td.RefreshToken, err = rt.SignedString([]byte(secret))
@@ -86,4 +89,21 @@ func verifyToken(tokenString string) (*jwt.Token, error) {
 		return token, ErrExpiredToken
 	}
 	return token, nil
+}
+
+func CreateAuth(userid uint, td *model.TokenDetails) error {
+	at := time.Unix(td.AtExpires, 0) // converting Unix to UTC(to Time object)
+	rt := time.Unix(td.RtExpires, 0)
+	now := time.Now()
+	var ctx = context.Background()
+
+	errAccess := cache.GetClient().Set(ctx, td.AtUUID, strconv.Itoa(int(userid)), at.Sub(now)).Err()
+	if errAccess != nil {
+		return errAccess
+	}
+	errRefresh := cache.GetClient().Set(ctx, td.RtUUID, strconv.Itoa(int(userid)), rt.Sub(now)).Err()
+	if errRefresh != nil {
+		return errRefresh
+	}
+	return nil
 }

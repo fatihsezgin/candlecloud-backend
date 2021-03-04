@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/fatihsezgin/candlecloud-backend/internal/app"
+	"github.com/fatihsezgin/candlecloud-backend/internal/cache"
 	"github.com/fatihsezgin/candlecloud-backend/internal/config"
 	"github.com/fatihsezgin/candlecloud-backend/internal/router"
 	"github.com/fatihsezgin/candlecloud-backend/internal/storage"
@@ -27,6 +28,8 @@ func main() {
 
 	s := storage.New(db)
 	app.MigrateSystemTables(s)
+
+	cache.InitRedis(&cfg.Redis)
 
 	srv := &http.Server{
 		MaxHeaderBytes: 10, // 10 MB

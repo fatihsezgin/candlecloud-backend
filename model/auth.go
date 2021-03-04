@@ -1,9 +1,5 @@
 package model
 
-import (
-	uuid "github.com/satori/go.uuid"
-)
-
 //AuthLoginDTO ...
 type AuthLoginDTO struct {
 	Email    string `validate:"required" json:"email"`
@@ -22,6 +18,6 @@ type TokenDetails struct {
 	RefreshToken string `json:"refresh_token"`
 	AtExpires    int64
 	RtExpires    int64
-	AtUUID       uuid.UUID
-	RtUUID       uuid.UUID
+	AtUUID       string
+	RtUUID       string
 }
