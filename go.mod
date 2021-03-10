@@ -8,7 +8,6 @@ require (
 	github.com/didip/tollbooth v4.0.2+incompatible
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible
-	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-redis/redis/v8 v8.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/jinzhu/gorm v1.9.16
@@ -18,5 +17,4 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/urfave/negroni v1.0.0
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
-	google.golang.org/appengine v1.6.1
 )

@@ -17,15 +17,17 @@ const (
 )
 
 var (
-	Success        = "Success"
-	signupSuccess  = "User created successfully"
-	userLoginErr   = "User email or master password is wrong."
-	userVerifyErr  = "Please verify your email first."
-	invalidUser    = "Invalid user"
-	validToken     = "Token is valid"
-	invalidToken   = "Token is expired or not valid!"
-	noToken        = "Token could not found! "
-	tokenCreateErr = "Token could not be created"
+	Success           = "Success"
+	signupSuccess     = "User created successfully"
+	userLoginErr      = "User email or master password is wrong."
+	userVerifyErr     = "Please verify your email first."
+	invalidUser       = "Invalid user"
+	validToken        = "Token is valid"
+	invalidToken      = "Token is expired or not valid!"
+	noToken           = "Token could not found! "
+	tokenCreateErr    = "Token could not be created"
+	tokenDeleteErr    = "Token could not be deleted"
+	userLogoutSuccess = "User logged out successfully"
 )
 
 func Signup(s storage.Store) http.HandlerFunc {
@@ -118,5 +120,26 @@ func Signin(s storage.Store) http.HandlerFunc {
 			UserDTO:      model.ToUserDTO(user),
 		}
 		RespondWithJSON(w, 200, authLoginResponse)
+	}
+}
+
+func Singout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		au := app.ExtractToken(r)
+		if au == "" {
+			RespondWithError(w, http.StatusUnauthorized, noToken)
+			return
+		}
+		token, err := app.TokenValid(au)
+		if err != nil {
+			RespondWithError(w, http.StatusUnauthorized, invalidToken)
+			return
+		}
+		deleteErr := app.DeleteAuth(token)
+		if deleteErr != nil {
+			RespondWithError(w, http.StatusInternalServerError, deleteErr.Error())
+			return
+		}
+		RespondWithJSON(w, http.StatusOK, userLogoutSuccess)
 	}
 }

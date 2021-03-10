@@ -45,11 +45,10 @@ func (r *Router) initRoutes() {
 	authRouter := mux.NewRouter().PathPrefix("/auth").Subrouter()
 	authRouter.HandleFunc("/signup", api.Signup(r.store)).Methods(http.MethodPost)
 	authRouter.HandleFunc("/signin", api.Signin(r.store)).Methods(http.MethodPost)
-
+	authRouter.HandleFunc("/logout", api.Singout()).Methods(http.MethodPost)
 	n := negroni.Classic()
 	n.Use(negroni.HandlerFunc(CORS))
 
-	// TODO refactor after the token issues has done.
 	r.router.PathPrefix("/api").Handler(n.With(
 		Auth(),
 		negroni.Wrap(apiRouter),
